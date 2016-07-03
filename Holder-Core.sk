@@ -1,0 +1,197 @@
+# Holder-Core v 1.0
+# CONFIGURATION (Feel free to edit!)
+options:
+        joinmessage: &8[&a+] {_Player}  #Join message
+		firstjoinmessage: &8[&a+] {_Player} &d(new) #New player join message
+		broadcastprefix: &8[&4Alert&8] #Prefix of /broadcast
+		broadcastcolor: &f #Color of broadcast text
+		nopermission: &8[&4Holder&8] &4You dont have permission.  #Message that appears if they dont have permission
+		banmsg: &c&lYOU'RE BANNED! #Prefix that appears when they try to join but are banned
+		kickmsg: &c&lYOU'VE BEEN KICKED! #Prefix that appears when they get kicked
+		
+#CODE (DO NOT EDIT DO NOT EDIT DO NOT EDIT DO NOT EDIT DO NOT EDIT DO NOT EDIT)
+on join:
+        set {_Player} to player
+		broadcast {@joinmessage}
+		set {ip.%player%} to IP of player
+
+on first join:
+              set {_Player} to player
+			  broadcast "{@firstjoinmessage}"
+			  
+command /broadcast [<text>]:
+description: Send a server-wide broadcast to everyone.
+aliases: /bc, /alert
+permission: holder.broadcast
+permission message: {@nopermission}
+trigger:
+        if arg 1 is set:
+		        broadcast "{@broadcastprefix} {@broadcastcolor}%arg-1%"
+		if arg 1 is not set:
+		        send "&fCorrect usage: &c/broadcast <message>"       
+
+command /msg [<offline player>] [<text>]:
+description: Send a player a private message.
+aliases: /tell, /message, /m, /whisper, /w, /pm
+permission: holder.msg
+permission message: {@nopermission}
+trigger:
+        if arg 2 is set:
+                send &e{_Player} &d> &e%arg-1%&e: &d%arg-2%	
+        else:
+             send "&fCorrect usage: &c/msg <player> <message>"
+			 
+command /kick [<offline player>] [<text>]:
+description: Kick the player from the server.
+permission: holder.kick
+permission message: {@nopermission}
+trigger:
+        if arg 2 is set:
+		        kick %arg-1% {@kickmsg} %arg-2%. Kicked by {_Player} using Holder-Core
+				
+		else:
+		     send "&fCorrect usage: &c/kick <player> <reason>"
+			 
+command /ban [<offline player>] [<text>]:
+description: Ban the player from the server.
+permission: holder.ban
+permission message: {@nopermission}
+trigger:
+        if arg 2 is set:
+		        ban %arg-1% {@banmsg} %arg-2%. Banned by {_Player} using Holder-Core
+				
+command /day:
+aliases: /time set day
+description: Set the time to day.
+permission: holder.time.day
+permission message: {@nopermission}
+trigger:
+        make player execute command "/minecraft:time set 1000"
+		
+command /night:
+aliases: /time set night
+description: Set the time to night.
+permission: holder.time.night
+permission message: {@nopermission}
+trigger:
+        make player execute command "/minecraft:time set 1000"
+		
+command /kickall:
+description: Kick ALL players from the server.
+permission: holder.kickall
+permission message: {@nopermission}
+trigger:
+        execute console command "/minecraft:kick @a Kicked by Holder-Core: Command /kickall was issued."
+		
+command /afk:
+description: Enable AFK mode.
+permission: holder.afk
+permission message: {@nopermission}
+trigger:
+        broadcast "&8- &8{_Player} &7has gone AFK."
+		send "&7Type &8/unafk &7to disable afk mode!"
+		
+command /unafk:
+description: Disable AFK mode.
+permission: holder.afk
+permission message: {@nopermission}
+trigger:
+        broadcast "&8- &8{_Player} &7is not AFK anymore."
+		send "&7Disabled &8/afk &7mode." to player
+		
+command /mute [<offline player>] [<number>]:
+permission: holder.mute
+permission message: {@nopermission}
+trigger:
+		if arg 1 is not set:
+			message "&c/mute <player> <seconds>"
+		if arg 1 is set:
+			set {mute.%arg 1%} to number-argument
+			broadcast "&c&l[MUTE] &b%arg-1% &cwas muted by &b%player%"
+
+every 1 second in "world":
+	loop all players:
+		if {mute.%loop-player%} is more than 0:
+			remove 1 from {mute.%loop-player%}
+		else:
+			delete {mute.%loop-player%}
+
+on chat:
+	if {mute.%player%} is more than 0:
+		message "&6You can not talk while you are muted. &b%{mute.%player%}% &cseconds left."
+		cancel event
+		
+every 20 second in "world":
+	loop all players:
+		if {mute.%loop-player%} is more than 0:
+			set action bar of loop-player to "&6You can talk in &b%{mute.%loop-player%}% &cseconds."
+			
+command /unmute [<offline player>]:
+permission: holder.mute
+permission message: {@nopermission}
+trigger:
+		if arg 1 is not set:
+			message "&c/unmute <player>"
+		if arg 1 is set:
+			delete {mute.%arg 1%}
+			broadcast "&c&l[UNMUTE] &b%arg-1% &cwas unmuted by &b%player%" 
+			
+command /unban [<text>]:
+permission: holder.ban
+permission message: {@nopermission}
+trigger:
+		execute console command "/pardon-ip %{ip.%arg 1%}%"
+		execute console command "/pardon %arg 1%"
+		send "&6Unbanned %arg 1%" to player
+		
+command /ip [<offline player>]:
+permission: holder.ip
+permission message: {@nopermission}
+trigger:
+        if arg 1 is not set:
+		        send "&fCorrect usage: &c/ip <Player>"
+				
+		if arg 2 is set:
+		        send "&9%arg-1%'s last used IP was {ip.%player%}"
+				
+command /give [<text>]:
+permission: holder.give
+permission message: {@nopermission}
+trigger:
+        if arg 1 is "planks":
+		        give {_Player} 5 1
+		if arg 1 is "diamond_block":
+		        give {_Player} diamond_block 1
+		if arg 1 is "gold_block":	
+		        give {_Player} gold_block 1
+		if arg 1 is "iron_block":
+		        give {_Player} iron_block 1
+		if arg 1 is "emerald_block":
+		        give {_Player} emerald_block 1
+		if arg 1 is "stone":
+		        give {_Player} stone 1
+		if arg 1 is "cobblestone":
+		        give {_Player} cobblestone 1
+		if arg 1 is "grass":
+		        give {_Player} grass 1
+		
+				
+		
+				
+
+		
+			
+
+                
+		
+
+		
+
+        
+ 
+       
+		        
+
+			 
+
+			  
